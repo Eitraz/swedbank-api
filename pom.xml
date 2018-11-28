@@ -6,7 +6,7 @@
 
     <groupId>com.github.eitraz</groupId>
     <artifactId>swedbank-api</artifactId>
-    <version>1.0</version>
+    <version>1.1</version>
 
     <name>swedbank-api</name>
     <description>Unofficial Java API client for Swedbank</description>

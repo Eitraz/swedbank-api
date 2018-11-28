@@ -7,6 +7,7 @@ Unofficial Java API client for Swedbank.
 
 ## Features
 - Account overview
+- Transaction account details
 - List account transactions
 
 ## Code examples
@@ -56,6 +57,17 @@ try (SwedbankApi swedbankApi = new MobileBankId(BankType.SWEDBANK)
         }
     }
 }
+```
+
+## Maven
+Available at [Maven Repository: Central](https://mvnrepository.com/artifact/com.github.eitraz/swedbank-api/1.1)
+
+```xml
+<dependency>
+    <groupId>com.github.eitraz</groupId>
+    <artifactId>swedbank-api</artifactId>
+    <version>1.1</version>
+</dependency>
 ```
 
 ## Thanks

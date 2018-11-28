@@ -1,7 +1,8 @@
 package com.github.eitraz.swedbank.model.engagement.transactions;
 
-import com.github.eitraz.swedbank.json.BalanceDeserializer;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.github.eitraz.swedbank.json.BalanceDeserializer;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,7 +16,9 @@ public class Account {
     @JsonDeserialize(using = BalanceDeserializer.class)
     private Double reservedAmount;
 
+    @JsonAlias({"quickBalanceSubscription", "quickbalanceSubscription"})
     private QuickbalanceSubscription quickbalanceSubscription;
+
     private boolean currencyAccount;
 
     @JsonDeserialize(using = BalanceDeserializer.class)

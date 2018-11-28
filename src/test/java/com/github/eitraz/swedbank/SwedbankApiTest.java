@@ -4,6 +4,7 @@ import com.github.eitraz.swedbank.authentication.MobileBankId;
 import com.github.eitraz.swedbank.bank.BankType;
 import com.github.eitraz.swedbank.model.engagement.Overview;
 import com.github.eitraz.swedbank.model.engagement.TransactionAccount;
+import com.github.eitraz.swedbank.model.engagement.account.AccountDetails;
 import com.github.eitraz.swedbank.model.engagement.transactions.Transaction;
 import com.github.eitraz.swedbank.model.engagement.transactions.Transactions;
 import org.junit.jupiter.api.AfterAll;
@@ -41,6 +42,16 @@ class SwedbankApiTest {
         Overview overview = api.getOverview();
 
         assertThat(overview.getTransactionAccounts()).isNotNull();
+    }
+
+    @Test
+    void getAccountDetails() throws Exception {
+        Overview overview = api.getOverview();
+
+        TransactionAccount transactionAccount = overview.getTransactionAccounts().get(0);
+
+        AccountDetails details = api.getAccountDetails(transactionAccount);
+        assertThat(details.getName().getCurrent()).isEqualTo(transactionAccount.getName());
     }
 
     @Test

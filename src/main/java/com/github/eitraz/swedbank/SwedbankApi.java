@@ -7,6 +7,7 @@ import com.github.eitraz.swedbank.model.Link;
 import com.github.eitraz.swedbank.model.Links;
 import com.github.eitraz.swedbank.model.engagement.Overview;
 import com.github.eitraz.swedbank.model.engagement.TransactionAccount;
+import com.github.eitraz.swedbank.model.engagement.account.AccountDetails;
 import com.github.eitraz.swedbank.model.engagement.transactions.Transaction;
 import com.github.eitraz.swedbank.model.engagement.transactions.Transactions;
 import com.github.eitraz.swedbank.model.profile.Profile;
@@ -73,6 +74,14 @@ public class SwedbankApi implements Closeable {
 
     public Overview getOverview() throws SwedbankClientException, SwedbankApiException {
         return getSwedbankClient().get("engagement/overview", Overview.class);
+    }
+
+    public AccountDetails getAccountDetails(TransactionAccount transactionAccount) throws SwedbankClientException, SwedbankApiException {
+        Link detailsLink = transactionAccount.getDetails()
+                                             .getLinks()
+                                             .getNext();
+
+        return getSwedbankClient().follow(detailsLink, AccountDetails.class);
     }
 
     public Transactions getTransactions(TransactionAccount account) throws SwedbankClientException, SwedbankApiException {
