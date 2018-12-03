@@ -70,5 +70,16 @@ Available at [Maven Repository: Central](https://mvnrepository.com/artifact/com.
 </dependency>
 ```
 
+## Change log
+
+### 1.0
+First release.
+
+### 1.1
+Account details.
+
+### 1.2
+Corporate details.
+
 ## Thanks
 Heavily based on the work made by https://github.com/walle89/SwedbankJson.
