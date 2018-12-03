@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
 
-class SwedbankApiTest {
+class SwedbankApiPrivateProfileTest {
     private static SwedbankApi api;
 
     @BeforeAll

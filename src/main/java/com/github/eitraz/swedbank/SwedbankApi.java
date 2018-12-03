@@ -10,8 +10,7 @@ import com.github.eitraz.swedbank.model.engagement.TransactionAccount;
 import com.github.eitraz.swedbank.model.engagement.account.AccountDetails;
 import com.github.eitraz.swedbank.model.engagement.transactions.Transaction;
 import com.github.eitraz.swedbank.model.engagement.transactions.Transactions;
-import com.github.eitraz.swedbank.model.profile.Profile;
-import com.github.eitraz.swedbank.model.profile.SetProfileResponse;
+import com.github.eitraz.swedbank.model.profile.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +27,7 @@ public class SwedbankApi implements Closeable {
     private static final Logger logger = LoggerFactory.getLogger(SwedbankApi.class);
 
     private SwedbankClient swedbankClient;
-    private Profile selectedProfile;
+    private boolean profileSelected;
 
     public SwedbankApi(SwedbankClient swedbankClient) {
         this.swedbankClient = swedbankClient;
@@ -39,23 +38,46 @@ public class SwedbankApi implements Closeable {
             throw new RuntimeException("Swedbank client have been logged out");
         }
 
-        if (selectedProfile == null) {
-            selectedProfile = selectProfile();
+        if (!profileSelected) {
+            Profile profile = getProfile();
+
+            if (profile.getBanks().size() == 1) {
+                Bank bank = profile.getBanks().get(0);
+
+                // Only private profile available
+                if (bank.getPrivateProfile() != null && bank.getCorporateProfiles().isEmpty()) {
+                    selectProfile(bank.getPrivateProfile());
+                }
+                // Only one corporate profile available
+                else if (bank.getPrivateProfile() == null && bank.getCorporateProfiles().size() == 1) {
+                    selectProfile(bank.getCorporateProfiles().get(0));
+                }
+                // Unable to auto select profile
+                else {
+                    throw new SwedbankApiException("Multiple profiles are available, profile can't be auto selected. Use setProfile() to select a profile.");
+                }
+            }
+            // Multiple banks
+            else {
+                throw new SwedbankApiException("There are multiple or no banks available, profile can't be auto selected. Use setProfile() to select a profile.");
+            }
         }
 
         return swedbankClient;
     }
 
-    private Profile selectProfile() throws SwedbankClientException, SwedbankApiException {
-        Profile profile = swedbankClient.get("profile/", Profile.class);
+    public Profile getProfile() throws SwedbankClientException {
+        return swedbankClient.get("profile/", Profile.class);
+    }
 
-        if (profile.getBanks().isEmpty()) {
-            throw new SwedbankApiException("The profile does not contain any bank accounts.");
-        }
+    public void selectProfile(PrivateProfile privateProfile) throws SwedbankClientException {
+        swedbankClient.follow(privateProfile.getLinks().getNext(), SetProfileResponse.class);
+        this.profileSelected = true;
+    }
 
-        String profileId = profile.getBanks().get(0).getPrivateProfile().getId();
-        swedbankClient.post("profile/" + profileId, null, SetProfileResponse.class);
-        return profile;
+    public void selectProfile(CorporateProfile corporateProfile) throws SwedbankClientException {
+        swedbankClient.follow(corporateProfile.getLinks().getNext(), SetProfileResponse.class);
+        this.profileSelected = true;
     }
 
     public void logout() throws SwedbankClientException {
