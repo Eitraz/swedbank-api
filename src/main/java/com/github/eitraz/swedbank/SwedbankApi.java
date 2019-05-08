@@ -45,11 +45,12 @@ public class SwedbankApi implements Closeable {
                 Bank bank = profile.getBanks().get(0);
 
                 // Only private profile available
-                if (bank.getPrivateProfile() != null && bank.getCorporateProfiles().isEmpty()) {
+                if (bank.getPrivateProfile() != null) {
+                    logger.info("Private profile available, will be selected as default");
                     selectProfile(bank.getPrivateProfile());
                 }
                 // Only one corporate profile available
-                else if (bank.getPrivateProfile() == null && bank.getCorporateProfiles().size() == 1) {
+                else if (bank.getCorporateProfiles() != null && bank.getCorporateProfiles().size() == 1) {
                     selectProfile(bank.getCorporateProfiles().get(0));
                 }
                 // Unable to auto select profile
@@ -100,8 +101,8 @@ public class SwedbankApi implements Closeable {
 
     public AccountDetails getAccountDetails(TransactionAccount transactionAccount) throws SwedbankClientException, SwedbankApiException {
         Link detailsLink = transactionAccount.getDetails()
-                                             .getLinks()
-                                             .getNext();
+                .getLinks()
+                .getNext();
 
         return getSwedbankClient().follow(detailsLink, AccountDetails.class);
     }

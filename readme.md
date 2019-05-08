@@ -81,5 +81,8 @@ Account details.
 ### 1.2
 Corporate details.
 
+### 1.3
+Updated Swedbank API version.
+
 ## Thanks
 Heavily based on the work made by https://github.com/walle89/SwedbankJson.

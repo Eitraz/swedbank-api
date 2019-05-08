@@ -1,12 +1,12 @@
 package com.github.eitraz.swedbank;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.eitraz.swedbank.bank.BankType;
 import com.github.eitraz.swedbank.exception.SwedbankClientException;
 import com.github.eitraz.swedbank.http.HttpMethod;
 import com.github.eitraz.swedbank.model.Link;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -29,8 +29,8 @@ public class SwedbankClient {
     private static final Logger logger = LoggerFactory.getLogger(SwedbankClient.class);
 
     private static final String DSID = "dsid";
-    private static final String BASE_URI = "https://auth.api.swedbank.se/TDE_DAP_Portal_REST_WEB/api/";
-    private static final String API_VERSION = "v4";
+    private static final String BASE_URI = "https://online.swedbank.se/TDE_DAP_Portal_REST_WEB/api/";
+    private static final String API_VERSION = "v5";
 
     private final BankType bankType;
     private final String authorization;
@@ -85,11 +85,11 @@ public class SwedbankClient {
         if (indexOfQueryParams != -1) {
             String queryParamsString = path.substring(indexOfQueryParams + 1);
             queryParameters = Arrays.stream(queryParamsString.split("&"))
-                                    .map(s -> StringUtils.split(s, "=", 2))
-                                    .collect(Collectors.toMap(
-                                            a -> a[0],
-                                            a -> a.length > 1 ? a[1] : "",
-                                            (a, b) -> a));
+                    .map(s -> StringUtils.split(s, "=", 2))
+                    .collect(Collectors.toMap(
+                            a -> a[0],
+                            a -> a.length > 1 ? a[1] : "",
+                            (a, b) -> a));
 
             path = path.substring(0, indexOfQueryParams);
         }
@@ -134,11 +134,10 @@ public class SwedbankClient {
 
     private synchronized String doRequest(HttpMethod method, String path, Map<String, String> queryParameters, String data) throws SwedbankClientException {
         // DSID
-        String dsid = RandomStringUtils.randomAlphabetic(8);
+        String dsid = RandomStringUtils.randomAlphabetic(16);
 
         // Null check for query parameters and headers
         queryParameters = ofNullable(queryParameters).orElseGet(HashMap::new);
-//        headers = ofNullable(headers).orElseGet(HashMap::new);
         Map<String, String> headers = new HashMap<>();
 
         // Setup query parameters and headers
@@ -153,6 +152,7 @@ public class SwedbankClient {
         headers.put("Content-Type", "application/json; charset=UTF-8");
         headers.put("Connection", "keep-alive");
         headers.put("Proxy-Connection", "keep-alive");
+        headers.put("X-Client", "@fdpc/portal-private/157.0.0");
 
         HttpURLConnection connection = openConnection(getUrl(path, queryParameters));
         try {
@@ -192,10 +192,10 @@ public class SwedbankClient {
                 connection.getRequestMethod(),
                 connection.getURL().toString(),
                 ofNullable(data).map(body -> String.format(" with request body: %s", body))
-                                .orElse(""));
+                        .orElse(""));
 
         connection.getRequestProperties()
-                  .forEach((key, value) -> logger.debug(">> Request header: {} = {}", key, value));
+                .forEach((key, value) -> logger.debug(">> Request header: {} = {}", key, value));
     }
 
     private void logResponse(HttpURLConnection connection, int responseCode, String responseBody) {
@@ -206,14 +206,14 @@ public class SwedbankClient {
                 responseBody);
 
         connection.getHeaderFields()
-                  .forEach((key, value) -> logger.debug("<< Response header: {} = {}", key, value));
+                .forEach((key, value) -> logger.debug("<< Response header: {} = {}", key, value));
     }
 
     private URL getUrl(String path, Map<String, String> queryParameters) {
         try {
             String queryParameter = queryParameters.entrySet().stream()
-                                                   .map(q -> q.getKey() + "=" + q.getValue())
-                                                   .collect(Collectors.joining("&"));
+                    .map(q -> q.getKey() + "=" + q.getValue())
+                    .collect(Collectors.joining("&"));
 
             // Remove leading '/'
             while (path.startsWith("/") && path.length() > 1) {
@@ -255,21 +255,21 @@ public class SwedbankClient {
         logger.debug(">> Request cookies: {}", cookies);
 
         return this.cookies.entrySet().stream()
-                           .map(e -> String.format("%s=%s;", e.getKey(), e.getValue()))
-                           .collect(Collectors.joining());
+                .map(e -> String.format("%s=%s;", e.getKey(), e.getValue()))
+                .collect(Collectors.joining());
     }
 
     private void setCookies(HttpURLConnection connection) {
         Map<String, String> responseCookies = connection.getHeaderFields()
-                                                        .entrySet().stream()
-                                                        .filter(e -> "Set-Cookie".equalsIgnoreCase(e.getKey()))
-                                                        .map(e -> parseCookie(e.getValue()))
-                                                        .flatMap(map -> map.entrySet().stream())
-                                                        .collect(Collectors.toMap(
-                                                                Map.Entry::getKey,
-                                                                Map.Entry::getValue,
-                                                                (a, b) -> a
-                                                        ));
+                .entrySet().stream()
+                .filter(e -> "Set-Cookie".equalsIgnoreCase(e.getKey()))
+                .map(e -> parseCookie(e.getValue()))
+                .flatMap(map -> map.entrySet().stream())
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (a, b) -> a
+                ));
 
         cookies.putAll(responseCookies);
         logger.debug("<< Response cookies: {}", cookies);
@@ -277,23 +277,23 @@ public class SwedbankClient {
 
     private Map<String, String> parseCookie(List<String> headerValues) {
         return headerValues.stream()
-                           .map(this::parseCookie)
-                           .flatMap(map -> map.entrySet().stream())
-                           .collect(Collectors.toMap(
-                                   Map.Entry::getKey,
-                                   Map.Entry::getValue,
-                                   (a, b) -> a
-                           ));
+                .map(this::parseCookie)
+                .flatMap(map -> map.entrySet().stream())
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (a, b) -> a
+                ));
     }
 
     private Map<String, String> parseCookie(String headerValue) {
         return Arrays.stream(headerValue.split(";"))
-                     .filter(s -> s.contains("="))
-                     .map(s -> StringUtils.split(s, "=", 2))
-                     .collect(Collectors.toMap(
-                             a -> a[0],
-                             a -> a.length > 1 ? a[1] : "",
-                             (a, b) -> a));
+                .filter(s -> s.contains("="))
+                .map(s -> StringUtils.split(s, "=", 2))
+                .collect(Collectors.toMap(
+                        a -> a[0],
+                        a -> a.length > 1 ? a[1] : "",
+                        (a, b) -> a));
     }
 
     private int getResponseCode(HttpURLConnection connection) {

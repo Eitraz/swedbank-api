@@ -57,8 +57,8 @@ class SwedbankApiPrivateProfileTest {
     @Test
     void getTransactions() throws Exception {
         TransactionAccount transactionAccount = api.getOverview()
-                                                   .getTransactionAccounts()
-                                                   .get(0);
+                .getTransactionAccounts()
+                .get(0);
 
         Transactions transactions = api.getTransactions(transactionAccount);
         assertThat(transactions.getAccount()).isNotNull();
@@ -68,18 +68,14 @@ class SwedbankApiPrivateProfileTest {
     @Test
     void getTransactionsIterable() throws Exception {
         TransactionAccount transactionAccount = api.getOverview()
-                                                   .getTransactionAccounts()
-                                                   .get(0);
+                .getTransactionAccounts()
+                .get(0);
 
         Set<String> transactionIds = new HashSet<>();
         Iterable<Transaction> transactions = api.getTransactionsIterable(transactionAccount, 25);
         int counter = 0;
         for (Transaction transaction : transactions) {
-            // Transaction ID may sometimes be null
-            if (transaction.getId() != null) {
-                assertThat(transactionIds).doesNotContain(transaction.getId());
-                transactionIds.add(transaction.getId());
-            }
+            transactionIds.add(transaction.getDate());
 
             // Fetch 50 first entries to force page loading
             if (++counter >= 50)
